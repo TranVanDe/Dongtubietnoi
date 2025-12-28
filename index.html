@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Động Từ Biết Nói</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            max-width: 600px;
+            width: 100%;
+            text-align: center;
+        }
+
+        h1 {
+            color: #667eea;
+            margin-bottom: 30px;
+            font-size: 2.5em;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .rules {
+            background: #f8f9ff;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+            text-align: left;
+        }
+
+        .rules h2 {
+            color: #764ba2;
+            margin-bottom: 15px;
+            font-size: 1.3em;
+        }
+
+        .rules ul {
+            margin-left: 20px;
+            line-height: 1.8;
+        }
+
+        .rules li {
+            margin-bottom: 10px;
+        }
+
+        .game-area {
+            display: none;
+        }
+
+        .game-area.active {
+            display: block;
+        }
+
+        .word-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 40px;
+            border-radius: 15px;
+            margin: 30px 0;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+
+        .hint {
+            font-size: 1.2em;
+            opacity: 0.9;
+            margin-bottom: 15px;
+        }
+
+        .word {
+            font-size: 3em;
+            font-weight: bold;
+            margin: 20px 0;
+            text-transform: uppercase;
+        }
+
+        .timer {
+            font-size: 4em;
+            font-weight: bold;
+            color: #667eea;
+            margin: 30px 0;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .timer.warning {
+            color: #ff6b6b;
+            animation: pulse 1s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+
+        button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            font-size: 1.2em;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: transform 0.3s, box-shadow 0.3s;
+            margin: 10px;
+            font-weight: bold;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        .btn-secondary {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        }
+
+        .examples {
+            background: #fff9e6;
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 15px;
+            font-size: 0.9em;
+            text-align: left;
+        }
+
+        .examples strong {
+            color: #764ba2;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎮 ĐỘNG TỪ BIẾT NÓI</h1>
+        
+        <div class="rules" id="rulesScreen">
+            <h2>📜 Luật Chơi</h2>
+            <ul>
+                <li><strong>Người miêu tả:</strong> Chỉ được nói các động từ/cụm động từ chỉ hành động</li>
+                <li><strong>Cấm:</strong> Tuyệt đối không dùng danh từ, tính từ</li>
+                <li><strong>Người đoán:</strong> Nghe động từ và đưa ra đáp án</li>
+                <li><strong>Thời gian:</strong> 60 giây cho mỗi từ</li>
+            </ul>
+            
+            <div class="examples">
+                <strong>Ví dụ:</strong><br>
+                • Con Sư Tử: Gầm, săn, vồ, xé, chạy<br>
+                • Cái Máy Giặt: Quay, xoay, vắt, giũ, xả<br>
+                • Người Đầu Bếp: Thái, băm, nếm, xào, nêm
+            </div>
+            
+            <button onclick="startGame()">🎯 BẮT ĐẦU CHƠI</button>
+        </div>
+
+        <div class="game-area" id="gameScreen">
+            <div class="word-card">
+                <div class="hint" id="hint">Con gì?</div>
+                <div class="word" id="word">SƯ TỬ</div>
+            </div>
+            
+            <div class="timer" id="timer">60</div>
+            
+            <button class="btn-secondary" onclick="nextWord()">⏭️ Từ Tiếp Theo</button>
+            <button onclick="endGame()">🏁 Kết Thúc</button>
+        </div>
+    </div>
+
+    <script>
+        const words = [
+            // CON VẬT - Động vật hoang dã
+            { word: "SƯ TỬ", hint: "Con gì?" }, { word: "HỔ", hint: "Con gì?" }, { word: "BÁO", hint: "Con gì?" },
+            { word: "VOI", hint: "Con gì?" }, { word: "HƯƠU CAO CỔ", hint: "Con gì?" }, { word: "KHỈ", hint: "Con gì?" },
+            { word: "GẤU", hint: "Con gì?" }, { word: "SÓI", hint: "Con gì?" }, { word: "CÁO", hint: "Con gì?" },
+            { word: "HÀ MÃ", hint: "Con gì?" }, { word: "TÊ GIÁC", hint: "Con gì?" }, { word: "NGỰA VẰN", hint: "Con gì?" },
+            { word: "KANGAROO", hint: "Con gì?" }, { word: "GẤU TRÚC", hint: "Con gì?" }, { word: "CHIMPANZê", hint: "Con gì?" },
+            { word: "LINH DƯƠNG", hint: "Con gì?" }, { word: "ĐẤM", hint: "Con gì?" }, { word: "NAI", hint: "Con gì?" },
+            { word: "TRÂU RỪNg", hint: "Con gì?" }, { word: "BÒ RỪNg", hint: "Con gì?" }, { word: "NGỰA HOANG", hint: "Con gì?" },
+            
+            // CON VẬT - Động vật nuôi
+            { word: "CHÓ", hint: "Con gì?" }, { word: "MÈO", hint: "Con gì?" }, { word: "GÀ", hint: "Con gì?" },
+            { word: "VỊT", hint: "Con gì?" }, { word: "NGỖ", hint: "Con gì?" }, { word: "BÒ", hint: "Con gì?" },
+            { word: "DÊ", hint: "Con gì?" }, { word: "CỪU", hint: "Con gì?" }, { word: "LỢN", hint: "Con gì?" },
+            { word: "THỎ", hint: "Con gì?" }, { word: "NGỰA", hint: "Con gì?" }, { word: "CHÓ CHĂN CỪU", hint: "Con gì?" },
+            { word: "MÈO BA TƯ", hint: "Con gì?" }, { word: "VẸT", hint: "Con gì?" }, { word: "CÁ CẢNH", hint: "Con gì?" },
+            { word: "CHUỘT HAMSTER", hint: "Con gì?" }, { word: "BỒ CÂU", hint: "Con gì?" }, { word: "GÀ TÂY", hint: "Con gì?" },
+            
+            // CON VẬT - Chim
+            { word: "ĐẠI BÀNG", hint: "Con gì?" }, { word: "CHIM ƯNG", hint: "Con gì?" }, { word: "CHIM SẺ", hint: "Con gì?" },
+            { word: "CÚ", hint: "Con gì?" }, { word: "DIỀU HÂU", hint: "Con gì?" }, { word: "CHIM BỒNG CÂU", hint: "Con gì?" },
+            { word: "CHIM CÁNH CỤT", hint: "Con gì?" }, { word: "HỒNg HẠC", hint: "Con gì?" }, { word: "GÕ KIẾNg", hint: "Con gì?" },
+            { word: "CHIM SẺ NHỎ", hint: "Con gì?" }, { word: "QUẠ", hint: "Con gì?" }, { word: "CHIM CÀNH CẠNH", hint: "Con gì?" },
+            { word: "CHIM CHÀO MÀO", hint: "Con gì?" }, { word: "SẺ CÁNH", hint: "Con gì?" }, { word: "CHIM YẾN", hint: "Con gì?" },
+            
+            // CON VẬT - Côn trùng
+            { word: "MUỖI", hint: "Con gì?" }, { word: "KIẾN", hint: "Con gì?" }, { word: "ONG", hint: "Con gì?" },
+            { word: "BƯỚM", hint: "Con gì?" }, { word: "VỢT", hint: "Con gì?" }, { word: "CHUỒN CHUỒN", hint: "Con gì?" },
+            { word: "DẾ", hint: "Con gì?" }, { word: "BỌ CÁNH CỨNG", hint: "Con gì?" }, { word: "BỌ RÙA", hint: "Con gì?" },
+            { word: "CHÂU CHẤU", hint: "Con gì?" }, { word: "VE SẦU", hint: "Con gì?" }, { word: "BỌ NGỰA", hint: "Con gì?" },
+            { word: "RUỒI", hint: "Con gì?" }, { word: "GIÁN", hint: "Con gì?" }, { word: "BỌ HUNG", hint: "Con gì?" },
+            
+            // CON VẬT - Động vật biển
+            { word: "CÁ HEO", hint: "Con gì?" }, { word: "CÁ MẬP", hint: "Con gì?" }, { word: "CÁ VOI", hint: "Con gì?" },
+            { word: "RÙA BIỂN", hint: "Con gì?" }, { word: "SÒ", hint: "Con gì?" }, { word: "CUA", hint: "Con gì?" },
+            { word: "TÔM", hint: "Con gì?" }, { word: "MỰC", hint: "Con gì?" }, { word: "BẠCh TUỘC", hint: "Con gì?" },
+            { word: "SƯ TỬ BIỂN", hint: "Con gì?" }, { word: "HẢI CẨU", hint: "Con gì?" }, { word: "HẢI MÃ", hint: "Con gì?" },
+            { word: "SÁO BIỂN", hint: "Con gì?" }, { word: "SAN HÔ", hint: "Con gì?" }, { word: "HẢI MÔNG", hint: "Con gì?" },
+            { word: "CÁ HỒI", hint: "Con gì?" }, { word: "CÁ NGỪ", hint: "Con gì?" }, { word: "CÁ THU", hint: "Con gì?" },
+            
+            // CON VẬT - Bò sát
+            { word: "RẮN", hint: "Con gì?" }, { word: "CÁ SẤU", hint: "Con gì?" }, { word: "THẰN LẰN", hint: "Con gì?" },
+            { word: "RÙA", hint: "Con gì?" }, { word: "TẮC KÈ", hint: "Con gì?" }, { word: "RỒNG KOMOdo", hint: "Con gì?" },
+            { word: "KỲ NHÔNG", hint: "Con gì?" }, { word: "RẮN HỔ MANG", hint: "Con gì?" }, { word: "TRĂN", hint: "Con gì?" },
+            
+            // CON VẬT - Động vật khác
+            { word: "ẾCHH", hint: "Con gì?" }, { word: "CÓC", hint: "Con gì?" }, { word: "KỲ ĐÀ", hint: "Con gì?" },
+            { word: "CHUỘT", hint: "Con gì?" }, { word: "DƠI", hint: "Con gì?" }, { word: "NHím", hint: "Con gì?" },
+            { word: "SÓC", hint: "Con gì?" }, { word: "CHUỘT LANG", hint: "Con gì?" }, { word: "CầY", hint: "Con gì?" },
+            
+            // ĐỒ VẬT - Điện tử
+            { word: "ĐIỆN THOẠI", hint: "Cái gì?" }, { word: "MÁY TÍNH", hint: "Cái gì?" }, { word: "TIVI", hint: "Cái gì?" },
+            { word: "LAPTOP", hint: "Cái gì?" }, { word: "TABLET", hint: "Cái gì?" }, { word: "CHUỘT MÁY TÍNH", hint: "Cái gì?" },
+            { word: "BÀN PHÍM", hint: "Cái gì?" }, { word: "TAI NGHE", hint: "Cái gì?" }, { word: "LOA", hint: "Cái gì?" },
+            { word: "MICRO", hint: "Cái gì?" }, { word: "CAMERA", hint: "Cái gì?" }, { word: "MÁY ẢNH", hint: "Cái gì?" },
+            { word: "ĐÀO GAME", hint: "Cái gì?" }, { word: "ĐỒNG HỒ THÔNG MINH", hint: "Cái gì?" }, { word: "SẠC DỰ PHÒNG", hint: "Cái gì?" },
+            { word: "USB", hint: "Cái gì?" }, { word: "Ổ CỨNG", hint: "Cái gì?" }, { word: "MÀN HÌNH", hint: "Cái gì?" },
+            { word: "MÁY IN", hint: "Cái gì?" }, { word: "ROUTER WIFI", hint: "Cái gì?" }, { word: "WEBCAM", hint: "Cái gì?" },
+            
+            // ĐỒ VẬT - Gia dụng
+            { word: "TỦ LẠNH", hint: "Cái gì?" }, { word: "MÁY GIẶT", hint: "Cái gì?" }, { word: "LÒ VI SÓNG", hint: "Cái gì?" },
+            { word: "NỒI CƠM ĐIỆN", hint: "Cái gì?" }, { word: "QUẠT", hint: "Cái gì?" }, { word: "ĐIỀU HÒA", hint: "Cái gì?" },
+            { word: "MÁY HÚT BỤI", hint: "Cái gì?" }, { word: "BÀN LÀ", hint: "Cái gì?" }, { word: "MÁY SẤY TÓC", hint: "Cái gì?" },
+            { word: "MÁY XAY SINH TỐ", hint: "Cái gì?" }, { word: "BÌNH ĐUNG NƯỚC", hint: "Cái gì?" }, { word: "ẤM ĐUNG NƯỚC", hint: "Cái gì?" },
+            { word: "BỘ ĐỘM", hint: "Cái gì?" }, { word: "NỒI ÁP SUẤT", hint: "Cái gì?" }, { word: "MÁY RỬA CHÉN", hint: "Cái gì?" },
+            { word: "LÒ NƯỚNG", hint: "Cái gì?" }, { word: "MÁY PHA CÀ PHÊ", hint: "Cái gì?" }, { word: "MÁY ÉP TRÁI CÂY", hint: "Cái gì?" },
+            { word: "CHẢO CHIÊN", hint: "Cái gì?" }, { word: "NỒI", hint: "Cái gì?" }, { word: "THÌA", hint: "Cái gì?" },
+            { word: "DAO", hint: "Cái gì?" }, { word: "DĨA", hint: "Cái gì?" }, { word: "BÌNH NƯỚC", hint: "Cái gì?" },
+            
+            // ĐỒ VẬT - Đồ dùng học tập
+            { word: "BÚT", hint: "Cái gì?" }, { word: "VỞ", hint: "Cái gì?" }, { word: "SÁCH", hint: "Cái gì?" },
+            { word: "THƯỚC KẺ", hint: "Cái gì?" }, { word: "COMPA", hint: "Cái gì?" }, { word: "GÔM", hint: "Cái gì?" },
+            { word: "BÚT CHÌ", hint: "Cái gì?" }, { word: "BÚT MÀU", hint: "Cái gì?" }, { word: "BÚT DẠ", hint: "Cái gì?" },
+            { word: "GỌT PENCIL", hint: "Cái gì?" }, { word: "KỂO", hint: "Cái gì?" }, { word: "KEO DÁN", hint: "Cái gì?" },
+            { word: "BẢNG", hint: "Cái gì?" }, { word: "PHẤN", hint: "Cái gì?" }, { word: "CẶP", hint: "Cái gì?" },
+            { word: "BA LÔ", hint: "Cái gì?" }, { word: "HỘP BÚT", hint: "Cái gì?" }, { word: "MÁY TÍNH CẦM TAY", hint: "Cái gì?" },
+            
+            // ĐỒ VẬT - Đồ nội thất
+            { word: "BÀN", hint: "Cái gì?" }, { word: "GHẾ", hint: "Cái gì?" }, { word: "GIƯỜNG", hint: "Cái gì?" },
+            { word: "TỦ", hint: "Cái gì?" }, { word: "KỆ SÁCH", hint: "Cái gì?" }, { word: "SOFA", hint: "Cái gì?" },
+            { word: "ĐÈN", hint: "Cái gì?" }, { word: "GƯƠNG", hint: "Cái gì?" }, { word: "RÈM CỬA", hint: "Cái gì?" },
+            { word: "THẢM", hint: "Cái gì?" }, { word: "GỐI", hint: "Cái gì?" }, { word: "CHĂN", hint: "Cái gì?" },
+            { word: "MỀN", hint: "Cái gì?" }, { word: "BÀN LÀM VIỆC", hint: "Cái gì?" }, { word: "TỦ QUẦN ÁO", hint: "Cái gì?" },
+            { word: "GIÁ TREO ĐỒ", hint: "Cái gì?" }, { word: "TRANH", hint: "Cái gì?" }, { word: "ĐỒNG HỒ TREO TƯỜNG", hint: "Cái gì?" },
+            
+            // ĐỒ VẬT - Phương tiện giao thông
+            { word: "Ô TÔ", hint: "Cái gì?" }, { word: "XE MÁY", hint: "Cái gì?" }, { word: "XE ĐẠP", hint: "Cái gì?" },
+            { word: "MÁY BAY", hint: "Cái gì?" }, { word: "TÀU THỦY", hint: "Cái gì?" }, { word: "TÀU HỎA", hint: "Cái gì?" },
+            { word: "XE BUS", hint: "Cái gì?" }, { word: "XE TẢI", hint: "Cái gì?" }, { word: "TRỰC THĂNG", hint: "Cái gì?" },
+            { word: "TÀU NGẦM", hint: "Cái gì?" }, { word: "THUYỀN", hint: "Cái gì?" }, { word: "XE LỬA", hint: "Cái gì?" },
+            { word: "XE ĐIỆN", hint: "Cái gì?" }, { word: "SCOOTER", hint: "Cái gì?" }, { word: "SKI", hint: "Cái gì?" },
+            
+            // ĐỒ VẬT - Đồ thể thao
+            { word: "BÓNG ĐÁ", hint: "Cái gì?" }, { word: "BÓNG RỔ", hint: "Cái gì?" }, { word: "BÓNG CHUYỀN", hint: "Cái gì?" },
+            { word: "VỢT CẦU LÔNG", hint: "Cái gì?" }, { word: "VỢT TENNIS", hint: "Cái gì?" }, { word: "VỢT BÓNG BÀN", hint: "Cái gì?" },
+            { word: "GẬY GOLF", hint: "Cái gì?" }, { word: "VAN TRƯỢT", hint: "Cái gì?" }, { word: "XE TRƯỢT PATIN", hint: "Cái gì?" },
+            { word: "TẠ TÂY", hint: "Cái gì?" }, { word: "DÂY NHẢY", hint: "Cái gì?" }, { word: "THẢM YOGA", hint: "Cái gì?" },
+            { word: "GĂNG TAY THỂ THAO", hint: "Cái gì?" }, { word: "MŨ BẢO HIỂM", hint: "Cái gì?" }, { word: "GIÀY THỂ THAO", hint: "Cái gì?" },
+            
+            // ĐỒ VẬT - Nhạc cụ
+            { word: "ĐÀN PIANO", hint: "Cái gì?" }, { word: "ĐÀN GUITAR", hint: "Cái gì?" }, { word: "TRỐNG", hint: "Cái gì?" },
+            { word: "SÁO", hint: "Cái gì?" }, { word: "VIOLIN", hint: "Cái gì?" }, { word: "KÈN", hint: "Cái gì?" },
+            { word: "ĐÀN ORGAN", hint: "Cái gì?" }, { word: "ĐÀN UKULELE", hint: "Cái gì?" }, { word: "HARMONICA", hint: "Cái gì?" },
+            
+            // ĐỒ VẬT - Đồ chơi
+            { word: "LEGO", hint: "Cái gì?" }, { word: "RUBIK", hint: "Cái gì?" }, { word: "BÚP BÊ", hint: "Cái gì?" },
+            { word: "Ô TÔ ĐỒ CHƠI", hint: "Cái gì?" }, { word: "MÁY BAY ĐỒ CHƠI", hint: "Cái gì?" }, { word: "ROBOT", hint: "Cái gì?" },
+            { word: "XÚC SẮC", hint: "Cái gì?" }, { word: "BÀI TÂY", hint: "Cái gì?" }, { word: "CỜ VUA", hint: "Cái gì?" },
+            { word: "CỜ CARÔ", hint: "Cái gì?" }, { word: "XÉP HÌNH", hint: "Cái gì?" }, { word: "YO-YO", hint: "Cái gì?" },
+            
+            // ĐỒ VẬT - Đồ dùng cá nhân
+            { word: "BÀN CHẢI ĐÁNH RĂNG", hint: "Cái gì?" }, { word: "KEM ĐÁNH RĂNG", hint: "Cái gì?" }, { word: "XÀ PHÒNG", hint: "Cái gì?" },
+            { word: "DẦU GỘI", hint: "Cái gì?" }, { word: "DẦU XẢ", hint: "Cái gì?" }, { word: "LƯỢC", hint: "Cái gì?" },
+            { word: "KHĂN TẮM", hint: "Cái gì?" }, { word: "KHĂN MẶT", hint: "Cái gì?" }, { word: "KÉO CẮT MÓNG", hint: "Cái gì?" },
+            { word: "BAO TAY", hint: "Cái gì?" }, { word: "KÍNH MÁT", hint: "Cái gì?" }, { word: "NƯỚC HOA", hint: "Cái gì?" },
+            { word: "SON MÔI", hint: "Cái gì?" }, { word: "PHẤN", hint: "Cái gì?" }, { word: "MẶT NẠ", hint: "Cái gì?" },
+            
+            // ĐỒ VẬT - Quần áo
+            { word: "ÁO THUN", hint: "Cái gì?" }, { word: "QUẦN JEANS", hint: "Cái gì?" }, { word: "VÁY", hint: "Cái gì?" },
+            { word: "ÁO KHOÁC", hint: "Cái gì?" }, { word: "ÁO SƠ MI", hint: "Cái gì?" }, { word: "QUẦN TÂY", hint: "Cái gì?" },
+            { word: "ÁO DÀI", hint: "Cái gì?" }, { word: "ÁO LEN", hint: "Cái gì?" }, { word: "MŨ", hint: "Cái gì?" },
+            { word: "NÓN", hint: "Cái gì?" }, { word: "GIÀY", hint: "Cái gì?" }, { word: "DÉP", hint: "Cái gì?" },
+            { word: "TẤT", hint: "Cái gì?" }, { word: "THẮT LƯNG", hint: "Cái gì?" }, { word: "KHĂN QUÀNG CỔ", hint: "Cái gì?" },
+            
+            // ĐỒ VẬT - Đồ dùng văn phòng
+            { word: "MÁY FAX", hint: "Cái gì?" }, { word: "MÁY PHOTOCOPY", hint: "Cái gì?" }, { word: "TỦ TÀI LIỆU", hint: "Cái gì?" },
+            { word: "BẢNG TRẮNG", hint: "Cái gì?" }, { word: "BÚT VIẾT BẢNG", hint: "Cái gì?" }, { word: "GỘI GIẤY", hint: "Cái gì?" },
+            { word: "KẸP GIẤY", hint: "Cái gì?" }, { word: "GHIM", hint: "Cái gì?" }, { word: "BẤM KIM", hint: "Cái gì?" },
+            { word: "BÌNH XỊT PHUN", hint: "Cái gì?" }, { word: "LỊCH ĐỂ BÀN", hint: "Cái gì?" }, { word: "ĐIỆN THOẠI BÀN", hint: "Cái gì?" },
+            
+            // ĐỒ VẬT - Đồ dùng nhà bếp
+            { word: "NỒI NƯỚC", hint: "Cái gì?" }, { word: "CHẢO", hint: "Cái gì?" }, { word: "MUỖNG", hint: "Cái gì?" },
+            { word: "NĨA", hint: "Cái gì?" }, { word: "ĐŨAALECKS", hint: "Cái gì?" }, { word: "LY", hint: "Cái gì?" },
+            { word: "CỐC", hint: "Cái gì?" }, { word: "BÌNH", hint: "Cái gì?" }, { word: "TÁCH", hint: "Cái gì?" },
+            { word: "THAU", hint: "Cái gì?" }, { word: "RỔ", hint: "Cái gì?" }, { word: "THÚNG", hint: "Cái gì?" },
+            { word: "MÂM", hint: "Cái gì?" }, { word: "KHAY", hint: "Cái gì?" }, { word: "HỘP", hint: "Cái gì?" },
+            { word: "LỌ", hint: "Cái gì?" }, { word: "CHAI", hint: "Cái gì?" }, { word: "KAN", hint: "Cái gì?" },
+            
+            // ĐỒ VẬT - Công cụ
+            { word: "BÚA", hint: "Cái gì?" }, { word: "CỪA", hint: "Cái gì?" }, { word: "ĐINH", hint: "Cái gì?" },
+            { word: "Ố VÍT", hint: "Cái gì?" }, { word: "KÌM", hint: "Cái gì?" }, { word: "KÉOCHH", hint: "Cái gì?" },
+            { word: "MẶT CƯA", hint: "Cái gì?" }, { word: "THANG", hint: "Cái gì?" }, { word: "CUỐC", hint: "Cái gì?" },
+            { word: "XẺNG", hint: "Cái gì?" }, { word: "CÀO", hint: "Cái gì?" }, { word: "GIỌT", hint: "Cái gì?" },
+            
+            // ĐỒ VẬT - Đèn
+            { word: "ĐÈN BÀN", hint: "Cái gì?" }, { word: "ĐÈN TRẦN", hint: "Cái gì?" }, { word: "ĐÈN NGỦ", hint: "Cái gì?" },
+            { word: "ĐÈN PIN", hint: "Cái gì?" }, { word: "ĐÈN LED", hint: "Cái gì?" }, { word: "ĐÈN NÊN", hint: "Cái gì?" },
+            { word: "ĐÈN TRANG TRÍ", hint: "Cái gì?" }, { word: "ĐÈN SÀN", hint: "Cái gì?" }, { word: "ĐÈN CHÙM", hint: "Cái gì?" },
+            
+            // ĐỒ VẬT - Đồ điện
+            { word: "Ổ CẮM", hint: "Cái gì?" }, { word: "CÔNG TẮC", hint: "Cái gì?" }, { word: "DÂY ĐIỆN", hint: "Cái gì?" },
+            { word: "PIN", hint: "Cái gì?" }, { word: "SẠC", hint: "Cái gì?" }, { word: "BIẾN ÁP", hint: "Cái gì?" },
+            { word: "CẦU CHÌ", hint: "Cái gì?" }, { word: "APTOMAT", hint: "Cái gì?" }, { word: "ĐỒNGmHỒ
+
+        let timer;
+        let timeLeft = 60;
+        let usedWords = [];
+
+        function startGame() {
+            document.getElementById('rulesScreen').style.display = 'none';
+            document.getElementById('gameScreen').classList.add('active');
+            nextWord();
+        }
+
+        function nextWord() {
+            clearInterval(timer);
+            timeLeft = 60;
+            
+            let availableWords = words.filter(w => !usedWords.includes(w.word));
+            
+            if (availableWords.length === 0) {
+                usedWords = [];
+                availableWords = words;
+            }
+            
+            const randomWord = availableWords[Math.floor(Math.random() * availableWords.length)];
+            usedWords.push(randomWord.word);
+            
+            document.getElementById('word').textContent = randomWord.word;
+            document.getElementById('hint').textContent = randomWord.hint;
+            document.getElementById('timer').textContent = timeLeft;
+            document.getElementById('timer').classList.remove('warning');
+            
+            startTimer();
+        }
+
+        function startTimer() {
+            timer = setInterval(() => {
+                timeLeft--;
+                document.getElementById('timer').textContent = timeLeft;
+                
+                if (timeLeft <= 10) {
+                    document.getElementById('timer').classList.add('warning');
+                }
+                
+                if (timeLeft <= 0) {
+                    clearInterval(timer);
+                    alert('⏰ Hết giờ! Chuyển sang từ tiếp theo.');
+                    nextWord();
+                }
+            }, 1000);
+        }
+
+        function endGame() {
+            clearInterval(timer);
+            document.getElementById('gameScreen').classList.remove('active');
+            document.getElementById('rulesScreen').style.display = 'block';
+            usedWords = [];
+            timeLeft = 60;
+        }
+    </script>
+</body>
+</html>
